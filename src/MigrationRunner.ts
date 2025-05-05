@@ -4,14 +4,29 @@ import * as crypto from "crypto";
 import { MigrationFile, MigrationInfo, MigrationRecord } from "./types";
 import { MigrationStore } from "./MigrationStore";
 
+/**
+ * Derive a stable 32-bit advisory lock ID from a string (e.g. migration table name).
+ * Uses the first 4 bytes of an MD5 hash so that different table names produce
+ * different lock IDs and the ID stays consistent across processes.
+ */
+export function deriveLockId(key: string): number {
+  const hash = crypto.createHash("md5").update(key).digest();
+  // Read as unsigned 32-bit int, then convert to signed 32-bit (pg_advisory_lock takes int4)
+  const unsigned = hash.readUInt32BE(0);
+  return unsigned | 0; // coerce to signed int32
+}
+
 export class MigrationRunner {
   private migrationsDir: string;
   private store: MigrationStore;
-  private lockId = 123456;
+  private lockId: number;
 
-  constructor(migrationsDir: string) {
+  constructor(migrationsDir: string, lockId?: number) {
     this.migrationsDir = path.resolve(migrationsDir);
     this.store = new MigrationStore();
+    // Default: derive lock ID from the migrations table name so it's
+    // unique per table and not a magic constant.
+    this.lockId = lockId ?? deriveLockId("_migrations");
   }
 
   async up(steps?: number): Promise<number> {
