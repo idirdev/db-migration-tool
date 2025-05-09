@@ -151,3 +151,39 @@ DB_PASSWORD=pass
 ## License
 
 MIT
+
+---
+
+## 🇫🇷 Documentation en français
+
+### Description
+`db-migration-tool` est un moteur de migration de base de données robuste pour PostgreSQL, doté d'un DSL de schéma fluide, d'un support de seeding et d'une interface CLI. Il offre des migrations versionnées avec transactions, verrouillage consultatif et validation par checksum pour garantir l'intégrité des migrations. Écrit en TypeScript, il prend en charge les formats SQL et JavaScript.
+
+### Installation
+```bash
+npm install
+npm run build
+```
+
+### Utilisation
+```bash
+# Créer une nouvelle migration
+migrate create <nom> [--format sql|js] [--dir ./migrations]
+
+# Appliquer les migrations en attente
+migrate up [--steps N] [--dir ./migrations]
+
+# Annuler les dernières migrations
+migrate down [--steps N] [--dir ./migrations]
+
+# Afficher le statut des migrations
+migrate status [--dir ./migrations]
+
+# Réinitialiser toutes les migrations
+migrate reset [--dir ./migrations]
+
+# Exécuter les fichiers de seed
+migrate seed [--dir ./seeds] [--truncate]
+```
+
+Consultez la documentation en anglais ci-dessus pour les détails complets sur les formats de migration, le DSL de schéma et les variables d'environnement.
