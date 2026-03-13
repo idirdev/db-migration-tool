@@ -127,7 +127,7 @@ export class SchemaBuilder {
 
 export class TableBuilder {
   private name: string;
-  private columns: ColumnDefinition[] = [];
+  private columnBuilders: ColumnBuilder[] = [];
   private indexes: IndexDefinition[] = [];
   private compositePrimaryKey?: string[];
 
@@ -176,14 +176,17 @@ export class TableBuilder {
 
   private addCol(name: string, type: ColumnType, length?: number): ColumnBuilder {
     const builder = new ColumnBuilder(name, type, length);
-    this.columns.push(builder.build());
+    // Store the builder reference — call build() lazily in TableBuilder.build()
+    // so that any chained modifiers (.primary(), .notNull(), etc.) applied by the
+    // caller are captured before the ColumnDefinition snapshot is taken.
+    this.columnBuilders.push(builder);
     return builder;
   }
 
   build(): TableDefinition {
     return {
       name: this.name,
-      columns: this.columns,
+      columns: this.columnBuilders.map((b) => b.build()),
       indexes: this.indexes,
       primaryKey: this.compositePrimaryKey,
     };
